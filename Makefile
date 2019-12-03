@@ -9,5 +9,5 @@ CC = gcc
 #CFLAGS = -I$(ROOT)/include
 
 % : %.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ \
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -lm \
         $? $(LOADLIBES) dynamixel.o

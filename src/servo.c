@@ -1,18 +1,5 @@
+#include "servo.h"
 
-// Prevent file from being included twice
-#ifndef SERVO_C
-#define SERVO_C
-
-#include "constants.c"
-#include "point.c"
-#include <stdio.h>
-#include <math.h>
-
-struct Servo
-{
-    struct Point *a;
-    struct Point *b;
-};
 
 // Move the whole servo by a vector
 void moveServoByPoint(struct Servo *servo, struct Point *p)
@@ -55,5 +42,3 @@ void printServo(struct Servo *s)
     printPoint(s->b);
     printf("\n-----------");
 }
-
-#endif

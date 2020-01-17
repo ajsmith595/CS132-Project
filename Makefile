@@ -1,13 +1,35 @@
+EXE = robotarm
+BASEDIR := $(abspath ./)
+OBJPATH := $(BASEDIR)/obj
+INCLUDE_PATH = $(BASEDIR)/include
+LIB_PATH = $(BASEDIR)/lib
+SRC_PATH = $(BASEDIR)/src
 
 
 CC = gcc
+CFLAGS = -c -Wall
+LDFLAGS = -Xlinker
+LIBS = $(LIB_PATH)/dynamixel.o -lm
+INCLUDES = -I$(INCLUDE_PATH) -I$(LIB_PATH)/include
 
-#LDFLAGS = -Xlinker -L$(ROOT)
+# list of all src and obj files
+SRC = $(wildcard $(SRC_PATH)/*.c)
+OBJ = $(SRC:$(SRC_PATH)/%.c=$(OBJPATH)/%.o)
 
-#LOADLIBES = -lm
+.PHONY: all clean
 
-#CFLAGS = -I$(ROOT)/include
+all: dir $(EXE)
 
-% : %.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -lm \
-        $? $(LOADLIBES) dynamixel.o
+# links object files and libraries into one
+$(EXE): $(OBJ)
+	$(CC) $(LDFLAGS) $^ $(LIBS) -o $@ 
+
+# compiles .c files to object files
+$(OBJPATH)/%.o: $(SRC_PATH)/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	$(RM) $(OBJ)
+
+dir:
+	mkdir -p $(OBJPATH)

@@ -1,39 +1,10 @@
-#include "dynamixel.h"
-#include "servo.c"
-#include "point.c"
-#include "constants.c"
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
-#include <math.h>
-
-struct Pole
-{
-    int pos;
-    int index;
-};
-
-// Set pole motor positions
-const int pos1 = 0x01aa;
-const int pos2 = 0x01ff;
-const int pos3 = 0x0254;
-
-struct Pole pole1, pole2, pole3;
+#include "robot.h"
 
 int connection;
 struct Servo *servos[3]; // There are 3 segments of the robot arm, so 3 servos
 struct Point *baseOfArm; // The location of the base motor of the arm
 int *poleHeights;        // An array of the number of cubes on each pole
 
-void reset_arm() // Resets the motors
-{
-    unsigned char arr[] = {0xff, 0xff, 0x00, 0x02, 0x06, 0xf7};
-
-    int buff_len = 100;
-    unsigned char buff[buff_len];
-
-    int bytes_read = write_to_connection(connection, arr, 6, buff, buff_len);
-}
 
 void reset() // Resets the virtualised version of the robot to be a vertical line of segments up
 {
@@ -49,26 +20,7 @@ void reset() // Resets the virtualised version of the robot to be a vertical lin
     }
 }
 
-// Converts a value used by motors to a degree value
-int robotArmServoValueToDegrees(float x)
-{
-    return (int)((x - 511) * 150 / 511);
-}
-// Opposite of robotArmServoValueToDegrees
-int degreesToRobotArmServoValue(float x)
-{
-    return (int)(x * 511 / 150 + 511);
-}
-// Converts radians to degrees
-float radsToDegrees(float x)
-{
-    return (x * 180 / PI);
-}
-// Converts radians to the value used by motors
-float radsToRobotArmServoValue(float x)
-{
-    return degreesToRobotArmServoValue(radsToDegrees(x));
-}
+
 
 // Writes a particular value to a particular motor
 void move_to_location(unsigned char id, unsigned char loc_h, unsigned char loc_l)
@@ -82,7 +34,7 @@ void move_to_location(unsigned char id, unsigned char loc_h, unsigned char loc_l
     int buff_len = 100;
     unsigned char buff[buff_len];
 
-    int bytes_read = write_to_connection(connection, arr, 11, buff, buff_len);
+    write_to_connection(connection, arr, 11, buff, buff_len);
 }
 
 // Like move_to_location, but the high and low bits are automatically handled
@@ -143,14 +95,8 @@ void setServoHeightsArr(int blockNumber)
     }
     free(offset);
 }
-float abso(float f) // Returns the absolute value
-{
-    if (f > 0)
-    {
-        return f;
-    }
-    return -f;
-}
+
+
 
 void setVertical(int block)
 {
@@ -182,7 +128,7 @@ void toSafeHeight()
     setVertical(NUM_OF_CUBES + 2);
 }
 
-int moveBlock(struct Pole from, struct Pole to)
+void moveBlock(struct Pole from, struct Pole to)
 {
     toSafeHeight();
     wait(1);
@@ -192,33 +138,20 @@ int moveBlock(struct Pole from, struct Pole to)
     wait(2);
     grab();
     wait(1);
+
     toSafeHeight();
     wait(1);
     setPole(to);
+    wait(1);
     setVertical(++poleHeights[to.index]);
     wait(2);
     drop();
     wait(1);
 }
 
-void solveHanoi(int n, struct Pole from, struct Pole aux, struct Pole to)
-{
-
-    if (n == 1)
-    {
-        moveBlock(from, to);
-        return;
-    }
-    solveHanoi(n - 1, from, to, aux); // move n - 1 disks to the middle.
-    moveBlock(from, to);              // move largest disk to last pole.
-    solveHanoi(n - 1, aux, from, to); // move n - 1 disks to last pole.
-}
 
 void init()
 {
-    pole1 = (struct Pole){pos1, 0};
-    pole2 = (struct Pole){pos2, 1};
-    pole3 = (struct Pole){pos3, 2};
 
     baseOfArm = malloc(sizeof(struct Point));
     baseOfArm->x = 0;
@@ -251,28 +184,15 @@ void init()
     {
         printServo(servos[i]);
     }
-    /*mtl(2, 255);
-	mtl(3, 0x01ff);
-	mtl(4, 0x0100);
-	mtl(5, 0x00);
-	setPole(pole1);
-	wait(3);*/
 }
 
-int main(int argc, char *argv[])
+void initRobot()
 {
     connection = open_connection("/dev/ttyUSB0", B1000000);
 
-    reset_arm();
     init();
     reset();
     drop();
     toSafeHeight();
     wait(2);
-    solveHanoi(NUM_OF_CUBES, pole1, pole2, pole3);
-
-    int cubeNum = 1;
-    //	setVertical(cubeNum);
-
-    return 0;
 }

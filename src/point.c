@@ -1,17 +1,5 @@
+#include "point.h"
 
-// Prevent file from being included twice
-#ifndef POINT_C
-#define POINT_C
-
-#include "constants.c"
-#include <stdio.h>
-#include <math.h>
-
-struct Point
-{
-    float x;
-    float y;
-};
 
 // Gets the magnitude of the vector of a given point
 float getPointMagnitude(struct Point *a)
@@ -71,5 +59,3 @@ void printPoint(struct Point *p)
 {
     printf("Vector: x=%.6f, y=%.6f;", p->x, p->y);
 }
-
-#endif

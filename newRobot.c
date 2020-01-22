@@ -204,7 +204,7 @@ int moveBlock(struct Pole from, struct Pole to)
 void solveHanoi(int n, struct Pole from, struct Pole aux, struct Pole to)
 {
 
-    if (n == 1)
+    if (n == 0)
     {
         moveBlock(from, to);
         return;
